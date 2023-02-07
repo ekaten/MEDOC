@@ -6,6 +6,15 @@ deployment:
     - /bin/cp -R templates $DEPLOYPATH
     - /bin/cp -R static $DEPLOYPATH
     - /bin/cp -R flask_session $DEPLOYPATH
+    - /bin/cp -R __pycache__ $DEPLOYPATH
+    - /bin/cp -R .idea $DEPLOYPATH
+    - /bin/cp app.py $DEPLOYPATH
+    - /bin/cp helpers.py $DEPLOYPATH
+    - /bin/cp medoc.db $DEPLOYPATH
+    - /bin/cp requirements.txt $DEPLOYPATH
+    
+
+
 
 
 
