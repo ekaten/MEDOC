@@ -2,7 +2,7 @@
 deployment:
   tasks:
 
-    - export DEPLOYPATH=/home/ekatzgmo/public_html/
+    - export DEPLOYPATH=/home/ekatzgmo/medoc/
     - /bin/cp -R templates $DEPLOYPATH
     - /bin/cp -R static $DEPLOYPATH
     - /bin/cp -R flask_session $DEPLOYPATH
