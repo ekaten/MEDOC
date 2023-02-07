@@ -1,0 +1,11 @@
+---
+deployment:
+  tasks:
+
+    - export DEPLOYPATH=/home/public_html/
+    - /bin/cp -R templates $DEPLOYPATH
+    - /bin/cp -R static $DEPLOYPATH
+    - /bin/cp -R flask_session $DEPLOYPATH
+
+
+
