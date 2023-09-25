@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/ekatzgmo/medoc/
+    - export DEPLOYPATH=/home/ekatzgmo/MEDOC
     - /bin/cp app.py $DEPLOYPATH
     - /bin/cp helpers.py $DEPLOYPATH
     - /bin/cp medoc.db $DEPLOYPATH
