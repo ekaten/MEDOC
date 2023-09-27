@@ -10,7 +10,6 @@ app = Flask(__name__)
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
-
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
@@ -61,8 +60,9 @@ def add_diagnosis():
         status = "existing"
         relation = 'self'
         provider_id = session["user_id"][0]["id"]
-        db.execute("INSERT INTO records (user_id, condition, details, who_diagnosed, date_diagnosed, status, relation, provider_id) VALUES (?,?,?,?,?,?,?,?)",
-                 user_id, condition, details, who_diagnosed, date_diagnosed, status, relation, provider_id)
+        db.execute(
+            "INSERT INTO records (user_id, condition, details, who_diagnosed, date_diagnosed, status, relation, provider_id) VALUES (?,?,?,?,?,?,?,?)",
+            user_id, condition, details, who_diagnosed, date_diagnosed, status, relation, provider_id)
         return redirect("/patients")
 
 
@@ -83,8 +83,9 @@ def add_prescription():
         schedule = request.form.get("schedule")
         prescriber = request.form.get("prescriber")
         provider_id = session["user_id"][0]["id"]
-        db.execute("INSERT INTO meds (user_id, medication, dosage, schedule, prescriber, provider_id) VALUES (?,?,?,?,?,?)",
-                    user_id, medication, dosage, schedule, prescriber, provider_id )
+        db.execute(
+            "INSERT INTO meds (user_id, medication, dosage, schedule, prescriber, provider_id) VALUES (?,?,?,?,?,?)",
+            user_id, medication, dosage, schedule, prescriber, provider_id)
         return redirect("/patients")
 
 
@@ -94,14 +95,19 @@ def add_prescription():
 def add_provider():
     patient = db.execute("SELECT * FROM users WHERE id = ?", session["user_id"][0]["id"])
     # Check if the provider was already added
-    was_added = db.execute("SELECT * FROM connections WHERE patient_id = ? AND  provider_id = ?", session["user_id"][0]["id"],
-                            request.form.get("provider_id"))
+    was_added = db.execute("SELECT * FROM connections WHERE patient_id = ? AND  provider_id = ?",
+                           session["user_id"][0]["id"],
+                           request.form.get("provider_id"))
     if was_added:
         return redirect("/providers")
     else:
-        db.execute("INSERT INTO connections (patient_id, patient_title, patient_first, patient_last, provider_id, provider_title, provider_first, provider_last, specialty, dob) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                    session["user_id"][0]["id"], patient[0]['title'], patient[0]['first'], patient[0]['last'], request.form.get("provider_id"), request.form.get("provider_title"), request.form.get("provider_first"), request.form.get("provider_last"), request.form.get("specialty"), patient[0]["dob"])
+        db.execute(
+            "INSERT INTO connections (patient_id, patient_title, patient_first, patient_last, provider_id, provider_title, provider_first, provider_last, specialty, dob) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            session["user_id"][0]["id"], patient[0]['title'], patient[0]['first'], patient[0]['last'],
+            request.form.get("provider_id"), request.form.get("provider_title"), request.form.get("provider_first"),
+            request.form.get("provider_last"), request.form.get("specialty"), patient[0]["dob"])
         return redirect("/providers")
+
 
 # <action> RETURN TO MEDICAL HISTORY PAGE
 @app.route("/back_to_history", methods=["POST"])
@@ -120,6 +126,7 @@ def delete_from_meds():
         db.execute("DELETE FROM meds WHERE id = ? AND user_id = ?", med_id, iid)
         return redirect("/medications")
 
+
 # <action> DELETE A CONDITION FROM USER'S MEDICAL HISTORY
 @app.route("/delete_from_record", methods=["POST"])
 @login_required
@@ -129,6 +136,7 @@ def delete_from_record():
     if condition_id:
         db.execute("DELETE FROM records WHERE id = ? AND user_id = ?", condition_id, this_id)
         return redirect("/history")
+
 
 # <action> DELETE A CONDITION FROM USER'S MEDICAL HISTORY
 @app.route("/delete_from_patient_record", methods=["POST"])
@@ -160,6 +168,7 @@ def delete_from_fam():
         db.execute("DELETE FROM records WHERE id = ? AND user_id = ?", condition_id, idd)
         return redirect("/family_history")
 
+
 # EDIT FAMILY HISTORY PAGE
 @app.route("/family_history", methods=["GET", "POST"])
 @login_required
@@ -171,12 +180,14 @@ def family_history():
 
     if request.method == "POST":
         db.execute("INSERT INTO records (user_id, condition, details, relation, status) VALUES (?,?,?,?,?)",
-                    id_u, request.form.get("condition"), request.form.get("details"), request.form.get("relation"), "N/A")
+                   id_u, request.form.get("condition"), request.form.get("details"), request.form.get("relation"),
+                   "N/A")
         return redirect("/family_history")
 
     else:
         conditions = db.execute("SELECT condition FROM conditions ORDER BY condition ASC")
         return render_template("family_history.html", family=family, famhistory=famhistory, conditions=conditions)
+
 
 # FIND PROVIDER PAGE
 @app.route("/find_provider", methods=["GET", "POST"])
@@ -188,13 +199,15 @@ def find_providers():
         specialty = request.form.get("specialty")
         if name and not specialty:
             search = db.execute(
-                "SELECT * FROM users WHERE usertype = 'Provider' AND last LIKE ? ORDER BY specialty ASC", "%" + name + "%")
+                "SELECT * FROM users WHERE usertype = 'Provider' AND last LIKE ? ORDER BY specialty ASC",
+                "%" + name + "%")
         elif specialty and not name:
             search = db.execute(
                 "SELECT * FROM users WHERE usertype = 'Provider' AND specialty = ? ORDER BY specialty ASC", specialty)
         else:
             search = db.execute(
-                "SELECT * FROM users WHERE usertype = 'Provider' AND last = ? AND specialty = ? ORDER BY specialty ASC", name, specialty)
+                "SELECT * FROM users WHERE usertype = 'Provider' AND last = ? AND specialty = ? ORDER BY specialty ASC",
+                name, specialty)
 
         return render_template("find_provider.html", specialties=specialties, search=search)
 
@@ -224,8 +237,9 @@ def history():
         status = request.form.get("status")
         relation = "self"
 
-        db.execute("INSERT INTO records (user_id, condition, details, who_diagnosed, date_diagnosed, status, relation) VALUES (?,?,?,?,?,?,?)",
-                    user_id, condition, details, who_diagnosed, date_diagnosed, status, relation)
+        db.execute(
+            "INSERT INTO records (user_id, condition, details, who_diagnosed, date_diagnosed, status, relation) VALUES (?,?,?,?,?,?,?)",
+            user_id, condition, details, who_diagnosed, date_diagnosed, status, relation)
         return redirect("/history")
 
     if request.method == "GET":
@@ -249,9 +263,9 @@ def info():
         employment_status = request.form.get("employment")
         ocupation = request.form.get("ocupation")
         employer = request.form.get("employer")
-        db.execute("UPDATE users SET title = ?, first = ?, last = ?,sex = ?, marital_status = ?, race = ?, employment_status = ?, ocupation = ?, employer = ?  WHERE id = ?",
-                    title, first, last, sex, marital_status, race, employment_status, ocupation, employer, iiid,)
-
+        db.execute(
+            "UPDATE users SET title = ?, first = ?, last = ?,sex = ?, marital_status = ?, race = ?, employment_status = ?, ocupation = ?, employer = ?  WHERE id = ?",
+            title, first, last, sex, marital_status, race, employment_status, ocupation, employer, iiid, )
 
         return redirect("/summary")
     else:
@@ -299,7 +313,6 @@ def login():
 # <action> LOG OUT
 @app.route("/logout")
 def logout():
-
     # Forget any user_id
     session.clear()
 
@@ -314,16 +327,19 @@ def medications():
     # save user's id in a variable
     an_id = session["user_id"][0]["id"]
     # save all user's records in a dictionary
-    meds = db.execute("SELECT * FROM meds WHERE user_id = ?" , an_id)
+    meds = db.execute("SELECT * FROM meds WHERE user_id = ?", an_id)
 
     if request.method == "POST":
-        db.execute("INSERT INTO meds (user_id, medication, dosage, schedule, prescriber) VALUES (?, ?, ?, ?, ?)", an_id, request.form.get(
-            "medication"), request.form.get("dosage"), request.form.get("schedule"), request.form.get("prescriber"))
+        db.execute("INSERT INTO meds (user_id, medication, dosage, schedule, prescriber) VALUES (?, ?, ?, ?, ?)", an_id,
+                   request.form.get(
+                       "medication"), request.form.get("dosage"), request.form.get("schedule"),
+                   request.form.get("prescriber"))
 
         return redirect("/medications")
 
     else:
         return render_template("medications.html", meds=meds)
+
 
 # PROVIDER'S LIST OF PATIENTS.
 @app.route("/patients", methods=["GET", "POST"])
@@ -336,8 +352,10 @@ def patients():
         return redirect("/patients", patient=patient)
 
     else:
-        list = db.execute("SELECT * FROM connections WHERE provider_id = ? ORDER BY patient_last ASC", session["user_id"][0]["id"] )
+        list = db.execute("SELECT * FROM connections WHERE provider_id = ? ORDER BY patient_last ASC",
+                          session["user_id"][0]["id"])
         return render_template("patients.html", list=list)
+
 
 # PATIENT'S FILE SEEN BY PROVIDER
 @app.route("/patient_file", methods=["POST"])
@@ -347,15 +365,15 @@ def patient_file():
     patientid = request.form.get("patient_id")
     provider_id = session["user_id"][0]["id"]
     # retrive connection data from the db
-    connection = db.execute("SELECT * FROM connections WHERE patient_id = ? and provider_id = ?", patientid, provider_id)
+    connection = db.execute("SELECT * FROM connections WHERE patient_id = ? and provider_id = ?", patientid,
+                            provider_id)
     patient = db.execute("SELECT * FROM users WHERE id = ?", patientid)
     provider = db.execute("SELECT * FROM users WHERE id = ?", provider_id)
-    diagnosed = db.execute("SELECT * FROM records WHERE user_id = ? AND provider_id = ?", patientid, provider_id )
+    diagnosed = db.execute("SELECT * FROM records WHERE user_id = ? AND provider_id = ?", patientid, provider_id)
     prescribed = db.execute("SELECT * FROM meds WHERE user_id = ? AND provider_id = ?", patientid, provider_id)
 
-    return render_template("patient_file.html", patient=patient,provider=provider, connection=connection, diagnosed=diagnosed, prescribed=prescribed)
-
-
+    return render_template("patient_file.html", patient=patient, provider=provider, connection=connection,
+                           diagnosed=diagnosed, prescribed=prescribed)
 
 
 # USER'S PROVIDERS LIST PAGE
@@ -368,8 +386,9 @@ def providers():
         return redirect("/providers")
 
     else:
-        list = db.execute("SELECT * FROM connections WHERE patient_id = ?", session["user_id"][0]["id"] )
+        list = db.execute("SELECT * FROM connections WHERE patient_id = ?", session["user_id"][0]["id"])
         return render_template("providers.html", list=list)
+
 
 # PROVIDER'S HOME PAGE
 @app.route("/provider_portal")
@@ -401,9 +420,8 @@ def provider_profile():
             specialty = request.form.get("add_specialty")
             db.execute("INSERT INTO specialties (specialty) VALUES (?)", specialty)
         db.execute("UPDATE users SET title = ?, first = ?, last = ?, sex = ?, specialty = ? WHERE id = ?",
-                    title, first, last, sex, specialty, id,)
+                   title, first, last, sex, specialty, id, )
         return redirect("/provider_profile")
-
 
 
 # REGISTER PAGE WITH TWO ACCOUNT OPTIONS
@@ -415,12 +433,13 @@ def register():
 # REGISTER AS A PATIENT PAGE
 @app.route("/register_patient", methods=["GET", "POST"])
 def register_patient():
-
     # When accessed via POST (Clicked REGISTER button)
     if request.method == "POST":
 
         # Make sure user completed all felids:
-        if not request.form.get("firstname") or not request.form.get("lastname") or not request.form.get("dob") or not request.form.get("password") or not request.form.get("username") or not request.form.get("confirmation"):
+        if not request.form.get("firstname") or not request.form.get("lastname") or not request.form.get(
+                "dob") or not request.form.get("password") or not request.form.get("username") or not request.form.get(
+                "confirmation"):
             return apology("Please, complete all feilds in the registration form", 400)
 
         # Check if user entered the same password in confirmation field
@@ -438,8 +457,11 @@ def register_patient():
             hash = generate_password_hash(request.form.get("password"))
 
             # Add credentials to the database
-            db.execute("INSERT INTO users (username, password, title, first, last, dob, usertype) VALUES (?,?,?,?,?,?,?)", username, hash, request.form.get(
-                "title"), request.form.get("firstname"), request.form.get("lastname"), request.form.get("dob"), request.form.get("usertype") )
+            db.execute(
+                "INSERT INTO users (username, password, title, first, last, dob, usertype) VALUES (?,?,?,?,?,?,?)",
+                username, hash, request.form.get(
+                    "title"), request.form.get("firstname"), request.form.get("lastname"), request.form.get("dob"),
+                request.form.get("usertype"))
 
             # Remember wich user logged in
             session["user_id"] = db.execute("SELECT id FROM users WHERE username = ?", username)
@@ -459,7 +481,9 @@ def register_provider():
     if request.method == "POST":
 
         # Make sure user completed all felids:
-        if not request.form.get("firstname") or not request.form.get("lastname") or not request.form.get("specialty") or not request.form.get("password") or not request.form.get("username") or not request.form.get("confirmation"):
+        if not request.form.get("firstname") or not request.form.get("lastname") or not request.form.get(
+                "specialty") or not request.form.get("password") or not request.form.get(
+                "username") or not request.form.get("confirmation"):
             return apology("Please, complete all feilds in the registration form", 400)
 
         # Check if user entered the same password in confirmation field
@@ -477,8 +501,11 @@ def register_provider():
             hash = generate_password_hash(request.form.get("password"))
 
             # Add credentials to the database
-            db.execute("INSERT INTO users (username, password, title, first, last, usertype, specialty) VALUES (?,?,?,?,?,?,?)", username, hash, request.form.get(
-                "title"), request.form.get("firstname"), request.form.get("lastname"), request.form.get("usertype"), request.form.get("specialty") )
+            db.execute(
+                "INSERT INTO users (username, password, title, first, last, usertype, specialty) VALUES (?,?,?,?,?,?,?)",
+                username, hash, request.form.get(
+                    "title"), request.form.get("firstname"), request.form.get("lastname"), request.form.get("usertype"),
+                request.form.get("specialty"))
 
             # Remember wich user logged in
             session["user_id"] = db.execute("SELECT id FROM users WHERE username = ?", username)
@@ -504,9 +531,11 @@ def share():
     meds = db.execute("SELECT * FROM meds WHERE user_id = ?", id)
     family = db.execute("SELECT DISTINCT relation FROM records WHERE user_id = ? AND relation != 'self' ", id)
     famhistory = db.execute("SELECT * FROM records WHERE user_id = ? AND relation != 'self' ORDER BY relation ASC", id)
-    connections = db.execute("SELECT * FROM connections WHERE patient_id = ?", session["user_id"][0]["id"] )
+    connections = db.execute("SELECT * FROM connections WHERE patient_id = ?", session["user_id"][0]["id"])
 
-    return render_template("share.html", info=info, records=records, meds=meds, family=family, famhistory=famhistory, connections=connections)
+    return render_template("share.html", info=info, records=records, meds=meds, family=family, famhistory=famhistory,
+                           connections=connections)
+
 
 # DISPLAY SHARED RECORDS PAGE
 @app.route("/shared", methods=["POST"])
@@ -545,8 +574,9 @@ def shared():
             ocupation = request.form.get("ocupation")
 
         # Add data to the connections table
-        db.execute("UPDATE connections SET sex = ?, race = ?, marital_status = ?, employment_status = ?, employer = ?, ocupation = ? WHERE patient_id = ? AND provider_id = ?",
-                    sex, race, marital_status, employment_status, employer, ocupation, patient_id, provider_id)
+        db.execute(
+            "UPDATE connections SET sex = ?, race = ?, marital_status = ?, employment_status = ?, employer = ?, ocupation = ? WHERE patient_id = ? AND provider_id = ?",
+            sex, race, marital_status, employment_status, employer, ocupation, patient_id, provider_id)
 
         # PATIENT'S CONDITIONS:
         # Store a list of patient's condition records in a variable:
@@ -581,10 +611,9 @@ def shared():
                 # Add the string stored in the input med_y 'value' to meds list:
                 meds += str(request.form.get(med))
 
-
         # FAMILY HISTORY:
         # Store a number of family conditions + 1 in a variable:
-        numb = len(db.execute("SELECT condition FROM records WHERE user_id = ? AND relation !='self'", patient_id))+1
+        numb = len(db.execute("SELECT condition FROM records WHERE user_id = ? AND relation !='self'", patient_id)) + 1
         family = ""
         # Save family conditions submitted via form to the "family" list:
         for f in range(1, numb):
@@ -596,15 +625,14 @@ def shared():
                 # Add case to the family list:
                 family += str(request.form.get(case))
 
-
-
         # Add data from the form to the connections db:
-        db.execute("UPDATE connections SET conditions = ?, meds = ?, family = ? WHERE patient_id = ? AND provider_id = ?",
-                    str(patient_conditions), str(meds), str(family), patient_id, provider_id )
-
+        db.execute(
+            "UPDATE connections SET conditions = ?, meds = ?, family = ? WHERE patient_id = ? AND provider_id = ?",
+            str(patient_conditions), str(meds), str(family), patient_id, provider_id)
 
         # Store patient-provider connection data
-        connection = db.execute("SELECT * FROM connections WHERE patient_id = ? and provider_id = ?", patient_id, provider_id)
+        connection = db.execute("SELECT * FROM connections WHERE patient_id = ? and provider_id = ?", patient_id,
+                                provider_id)
 
         return render_template("shared.html", patient=patient, provider=provider, connection=connection)
 
@@ -628,10 +656,9 @@ def summary():
         meds = db.execute("SELECT * FROM meds WHERE user_id = ?", u_id)
         family = db.execute("SELECT DISTINCT relation FROM records WHERE user_id = ? AND relation != 'self' ", u_id)
         famhistory = db.execute("SELECT * FROM records WHERE user_id = ? AND relation != 'self'", u_id)
-        return render_template("summary.html", records=records, meds=meds, info=info, family=family, famhistory=famhistory)
+        return render_template("summary.html", records=records, meds=meds, info=info, family=family,
+                               famhistory=famhistory)
 
 
-
-
-
-app.run()
+if __name__ == "__main__":
+    app.run()
